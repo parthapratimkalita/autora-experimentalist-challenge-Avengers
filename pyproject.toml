@@ -1,0 +1,38 @@
+[project]
+# UPDATE THIS BEFORE PUBLISHING
+name = "autora_experimentalist_example"
+description = "This is an example experimentalist."
+authors = [{ name = "FirstName LastName", email = "your@email.de" }]
+dynamic = ["version"]
+
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8,<4"
+
+# ADD NEW DEPENDENCIES HERE
+dependencies = [
+    "autora",
+    "scikit-learn",
+    "autora-theorist-bms",
+    "autora[all-experimentalists]",
+    "matplotlib",
+    "dataclasses",
+    "typing"
+]
+
+[project.optional-dependencies]
+dev = [
+    "autora-core[dev]"
+]
+
+[project.urls]
+homepage = "http://www.empiricalresearch.ai"
+repository = "https://github.com/musslick/autora-experimentalist-challenge"
+documentation = "https://autoresearch.github.io/autora/"
+
+
+[build-system]
+requires = ["setuptools", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
