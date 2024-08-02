@@ -1,6 +1,8 @@
 """
 Example Experimentalist
 """
+import math
+
 import numpy as np
 import pandas as pd
 
@@ -38,7 +40,7 @@ def sample(
     if num_samples is None:
         num_samples = conditions.shape[0]
 
-    return hybrid_sampling(conditions, models, num_samples=5, alpha=0.7)
+    return hybrid_sampling(conditions, models, num_samples=num_samples, alpha=0.7)
 
 
 def hybrid_sampling(conditions, models, num_samples=1, alpha=0.7):
@@ -47,8 +49,6 @@ def hybrid_sampling(conditions, models, num_samples=1, alpha=0.7):
         conditions = pd.DataFrame(conditions)
 
     total_samples = conditions.shape[0]
-    num_uncertain_samples = int(num_samples * alpha)
-    num_random_samples = num_samples - num_uncertain_samples
 
     # Get predictions from all models
     predictions = np.array([model.predict(conditions) for model in models])
@@ -56,13 +56,26 @@ def hybrid_sampling(conditions, models, num_samples=1, alpha=0.7):
     # Calculate uncertainty as the standard deviation of predictions
     uncertainty = np.std(predictions, axis=0).flatten()
 
-    # Select indices with the highest uncertainty
-    most_uncertain_indices = np.argsort(uncertainty)[-num_uncertain_samples:]
+    if num_samples == 1:
+        # When num_samples is 1, decide based on alpha whether to pick the most uncertain or a random sample
+        if np.random.rand() <= alpha:
+            # Select the index with the highest uncertainty
+            selected_index = np.argmax(uncertainty)
+        else:
+            # Select a random index
+            selected_index = np.random.choice(total_samples)
+        return conditions.iloc[[selected_index]]
+    else:
+        num_uncertain_samples = int(num_samples * alpha)
+        num_random_samples = num_samples - num_uncertain_samples
 
-    # Select random indices
-    random_indices = np.random.choice(total_samples, num_random_samples, replace=False)
+        # Select indices with the highest uncertainty
+        most_uncertain_indices = np.argsort(uncertainty)[-num_uncertain_samples:]
 
-    # Combine the indices
-    combined_indices = np.concatenate((most_uncertain_indices, random_indices))
+        # Select random indices
+        random_indices = np.random.choice(total_samples, size=num_random_samples, replace=False)
 
-    return conditions.iloc[combined_indices]
+        # Combine the indices
+        combined_indices = np.concatenate((most_uncertain_indices, random_indices))
+
+        return conditions.iloc[combined_indices]
