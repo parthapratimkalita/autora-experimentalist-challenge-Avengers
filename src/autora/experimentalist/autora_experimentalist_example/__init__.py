@@ -1,17 +1,18 @@
 """
 Example Experimentalist
 """
+from typing import Union, List
+
 import numpy as np
 import pandas as pd
-
-from typing import Union, List
+from sklearn.cluster import KMeans
 
 
 def sample(
-        conditions: Union[pd.DataFrame, np.ndarray],
-        models: List,
-        reference_conditions: Union[pd.DataFrame, np.ndarray],
-        num_samples: int = 1) -> pd.DataFrame:
+    conditions: Union[pd.DataFrame, np.ndarray],
+    models: List,
+    reference_conditions: Union[pd.DataFrame, np.ndarray] = None,
+    num_samples: int = 1) -> pd.DataFrame:
     """
     Add a description of the sampler here.
 
@@ -38,6 +39,11 @@ def sample(
     if num_samples is None:
         num_samples = conditions.shape[0]
 
-    new_conditions = conditions
+    return diversity_sampling(conditions, num_samples)
 
-    return new_conditions[:num_samples]
+
+def diversity_sampling(conditions, num_samples=1):
+    kmeans = KMeans(n_clusters=num_samples)
+    kmeans.fit(conditions)
+    cluster_centers = kmeans.cluster_centers_
+    return pd.DataFrame(cluster_centers, columns=conditions.columns)
