@@ -10,7 +10,7 @@ from typing import Union, List
 def sample(
         conditions: Union[pd.DataFrame, np.ndarray],
         models: List,
-        reference_conditions: Union[pd.DataFrame, np.ndarray],
+        reference_conditions: Union[pd.DataFrame, np.ndarray] = None,
         num_samples: int = 1) -> pd.DataFrame:
     """
     Add a description of the sampler here.
@@ -38,6 +38,31 @@ def sample(
     if num_samples is None:
         num_samples = conditions.shape[0]
 
-    new_conditions = conditions
+    return hybrid_sampling(conditions, models, num_samples=5, alpha=0.7)
 
-    return new_conditions[:num_samples]
+
+def hybrid_sampling(conditions, models, num_samples=1, alpha=0.7):
+    # Ensure conditions are in DataFrame format for consistent indexing
+    if isinstance(conditions, np.ndarray):
+        conditions = pd.DataFrame(conditions)
+
+    total_samples = conditions.shape[0]
+    num_uncertain_samples = int(num_samples * alpha)
+    num_random_samples = num_samples - num_uncertain_samples
+
+    # Get predictions from all models
+    predictions = np.array([model.predict(conditions) for model in models])
+
+    # Calculate uncertainty as the standard deviation of predictions
+    uncertainty = np.std(predictions, axis=0).flatten()
+
+    # Select indices with the highest uncertainty
+    most_uncertain_indices = np.argsort(uncertainty)[-num_uncertain_samples:]
+
+    # Select random indices
+    random_indices = np.random.choice(total_samples, num_random_samples, replace=False)
+
+    # Combine the indices
+    combined_indices = np.concatenate((most_uncertain_indices, random_indices))
+
+    return conditions.iloc[combined_indices]
