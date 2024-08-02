@@ -8,10 +8,10 @@ from typing import Union, List
 
 
 def sample(
-        conditions: Union[pd.DataFrame, np.ndarray],
-        models: List,
-        reference_conditions: Union[pd.DataFrame, np.ndarray],
-        num_samples: int = 1) -> pd.DataFrame:
+    conditions: Union[pd.DataFrame, np.ndarray],
+    models: List,
+    reference_conditions: Union[pd.DataFrame, np.ndarray] = None,
+    num_samples: int = 1) -> pd.DataFrame:
     """
     Add a description of the sampler here.
 
@@ -38,6 +38,13 @@ def sample(
     if num_samples is None:
         num_samples = conditions.shape[0]
 
-    new_conditions = conditions
+    new_conditions = model_based_exploration(conditions, models, num_samples)
 
-    return new_conditions[:num_samples]
+    return new_conditions
+
+
+def model_based_exploration(conditions, models, num_samples=1):
+    predictions = np.array([model.predict(conditions) for model in models])
+    avg_predictions = np.mean(predictions, axis=0).flatten()
+    high_variance_indices = np.argsort(avg_predictions)[-num_samples:]
+    return conditions.iloc[high_variance_indices]
