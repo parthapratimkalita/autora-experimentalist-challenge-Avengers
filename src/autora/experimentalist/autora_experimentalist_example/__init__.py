@@ -15,6 +15,7 @@ from typing import Union, List
 def sample(
         all_conditions: Union[pd.DataFrame, np.ndarray],
         models: List,
+        reference_conditions: Union[pd.DataFrame, np.ndarray] = None,
         num: int = 1) -> pd.DataFrame:
     """
     Add a description of the sampler here.
@@ -44,11 +45,8 @@ def sample(
     conditions = model_disagreement_sample(
           all_conditions,
           models,
-          num_samples = 10
+          num_samples=10
         )
     print("hello")
-    conditions = conditions.sample(n=1)
-        
-  
-
-    return Delta(conditions)
+    conditions = conditions.sample(n=num)
+    return conditions
