@@ -3,15 +3,20 @@ Example Experimentalist
 """
 import numpy as np
 import pandas as pd
+from autora.state import State, StandardState, on_state, estimator_on_state, Delta, VariableCollection
+from autora.experimentalist.falsification import falsification_sample
+from autora.experimentalist.model_disagreement import model_disagreement_sample
+from autora.experimentalist.uncertainty import uncertainty_sample
+from autora.experimentalist.random import random_pool, random_sample
 
 from typing import Union, List
 
 
 def sample(
-        conditions: Union[pd.DataFrame, np.ndarray],
+        all_conditions: Union[pd.DataFrame, np.ndarray],
         models: List,
-        reference_conditions: Union[pd.DataFrame, np.ndarray],
-        num_samples: int = 1) -> pd.DataFrame:
+        reference_conditions: Union[pd.DataFrame, np.ndarray] = None,
+        num: int = 1) -> pd.DataFrame:
     """
     Add a description of the sampler here.
 
@@ -35,9 +40,13 @@ def sample(
         3
 
     """
-    if num_samples is None:
-        num_samples = conditions.shape[0]
-
-    new_conditions = conditions
-
-    return new_conditions[:num_samples]
+    # **** STATE WRAPPER FOR YOUR EXPERIMENTALIST ***
+    
+    conditions = model_disagreement_sample(
+          all_conditions,
+          models,
+          num_samples=10
+        )
+    print("hello")
+    conditions = conditions.sample(n=num)
+    return conditions
