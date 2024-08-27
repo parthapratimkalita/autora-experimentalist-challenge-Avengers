@@ -47,6 +47,4 @@ def sample(
           models,
           num_samples=10
         )
-    print("hello")
-    conditions = conditions.sample(n=num)
-    return conditions
+    return conditions.sample(n=num)
